@@ -11,6 +11,7 @@ import type { SimParams } from '../engine/types';
 export interface PanelState {
   pointSize: number;
   glow: number;
+  fog: number;
   fovYDeg: number;
 }
 
@@ -48,6 +49,7 @@ export function createPanel(
   const look = gui.addFolder('Look');
   look.add(view, 'pointSize', 0.005, 0.08, 0.001).name('sprite size');
   look.add(view, 'glow', 0.2, 3.0, 0.05).name('glow');
+  look.add(view, 'fog', 0.0, 1.0, 0.01).name('depth fog');
   look.add(view, 'fovYDeg', 25, 90, 1).name('FOV');
 
   return gui;

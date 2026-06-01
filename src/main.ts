@@ -6,7 +6,7 @@
 
 import { DEFAULT_PARAMS, type SimParams } from './engine/types';
 import { createState, seed, mulberry32, type SimState } from './engine/state';
-import { buildPalette } from './engine/palette';
+import { buildPalette, buildWeights } from './engine/palette';
 import { createGrid } from './engine/grid3d';
 import { createMatrix, type AttractionMatrix } from './engine/matrix';
 import { step } from './engine/step';
@@ -40,12 +40,18 @@ function main(): void {
   const grid = createGrid();
   let matrix: AttractionMatrix = createMatrix(params.typeCount, mulberry32(1337));
   renderer.setPalette(buildPalette(params.typeCount));
+  renderer.setWeights(buildWeights(params.typeCount));
   renderer.upload(state.positions, state.types, state.count);
 
   const camera = new OrbitCamera();
   const projection = new Projection();
 
-  const view: PanelState = { pointSize: 0.022, glow: 1.1, fovYDeg: projection.params.fovYDeg };
+  const view: PanelState = {
+    pointSize: 0.022,
+    glow: 1.1,
+    fog: 0.85,
+    fovYDeg: projection.params.fovYDeg,
+  };
 
   const stats = new StatsOverlay();
   const battery = createBatteryReadout();
@@ -105,6 +111,7 @@ function main(): void {
       pointSize: view.pointSize,
       focal,
       glow: view.glow,
+      fog: view.fog,
     });
 
     stats.update(frameMs, now, {

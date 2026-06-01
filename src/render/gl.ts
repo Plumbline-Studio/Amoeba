@@ -13,6 +13,9 @@ import fragSrc from './shaders/particle.frag?raw';
 
 const MAX_PALETTE = 16;
 
+/** Scene background (also the fog target). Shared by clear color + shader. */
+export const BACKGROUND: readonly [number, number, number] = [0.02, 0.03, 0.06];
+
 // Unit quad as two triangles, corners in [-0.5, 0.5].
 const QUAD = new Float32Array([
   -0.5, -0.5,
@@ -32,6 +35,8 @@ export interface RenderUniforms {
   focal: number;
   /** Additive glow intensity. */
   glow: number;
+  /** Atmospheric fog strength (0 = off). */
+  fog: number;
 }
 
 export interface DrawStats {
@@ -54,7 +59,10 @@ export class ParticleRenderer {
   private uPointSize: WebGLUniformLocation;
   private uFocal: WebGLUniformLocation;
   private uGlow: WebGLUniformLocation;
+  private uFog: WebGLUniformLocation;
   private uPalette: WebGLUniformLocation;
+  private uWeights: WebGLUniformLocation;
+  private uBackground: WebGLUniformLocation;
 
   private capacity = 0;
   private count = 0;
@@ -80,7 +88,10 @@ export class ParticleRenderer {
     this.uPointSize = mustGetUniform(gl, this.program, 'uPointSize');
     this.uFocal = mustGetUniform(gl, this.program, 'uFocal');
     this.uGlow = mustGetUniform(gl, this.program, 'uGlow');
+    this.uFog = mustGetUniform(gl, this.program, 'uFog');
     this.uPalette = mustGetUniform(gl, this.program, 'uPalette[0]');
+    this.uWeights = mustGetUniform(gl, this.program, 'uWeights[0]');
+    this.uBackground = mustGetUniform(gl, this.program, 'uBackground');
 
     this.vao = mustCreate(gl.createVertexArray(), 'VAO');
     this.positionBuffer = mustCreate(gl.createBuffer(), 'position buffer');
@@ -114,7 +125,11 @@ export class ParticleRenderer {
     gl.disable(gl.DEPTH_TEST);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    gl.clearColor(0.02, 0.03, 0.05, 1.0);
+    gl.clearColor(BACKGROUND[0], BACKGROUND[1], BACKGROUND[2], 1.0);
+
+    // Background is constant; set the fog-target uniform once.
+    gl.useProgram(this.program);
+    gl.uniform3f(this.uBackground, BACKGROUND[0], BACKGROUND[1], BACKGROUND[2]);
   }
 
   /** Upload the RGB palette table (typeCount * 3 floats). */
@@ -124,6 +139,16 @@ export class ParticleRenderer {
     padded.set(rgb.subarray(0, n * 3));
     this.gl.useProgram(this.program);
     this.gl.uniform3fv(this.uPalette, padded);
+  }
+
+  /** Upload the per-type additive weight table (typeCount floats). */
+  setWeights(weights: Float32Array): void {
+    const n = Math.min(MAX_PALETTE, weights.length);
+    const padded = new Float32Array(MAX_PALETTE);
+    padded.fill(1);
+    padded.set(weights.subarray(0, n));
+    this.gl.useProgram(this.program);
+    this.gl.uniform1fv(this.uWeights, padded);
   }
 
   /** Ensure per-instance buffers can hold `capacity` particles. */
@@ -181,6 +206,7 @@ export class ParticleRenderer {
     gl.uniform1f(this.uPointSize, u.pointSize);
     gl.uniform1f(this.uFocal, u.focal);
     gl.uniform1f(this.uGlow, u.glow);
+    gl.uniform1f(this.uFog, u.fog);
 
     gl.bindVertexArray(this.vao);
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);

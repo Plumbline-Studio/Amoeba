@@ -6,7 +6,7 @@ which host HTML/WebGL directly) and a mobile web app / PWA.
 
 See [`PLAN.md`](./PLAN.md) for the full design and milestone roadmap.
 
-## Status: M0 scaffold + M1 physics
+## Status: M0 scaffold + M1 physics + M2 look
 
 - **Vite + TypeScript + WebGL2** standalone app.
 - **N particles** drawn as additively-blended **instanced billboard quads**
@@ -16,10 +16,14 @@ See [`PLAN.md`](./PLAN.md) for the full design and milestone roadmap.
 - **3D particle-life physics** (M1): SoA `step` with a 27-cell spatial hash
   (`grid3d`), a randomized type-attraction matrix, the classic radial force
   curve, and a soft bounded box (no z-wrap). Driven each frame on the CPU.
+- **Depth-cued look** (M2): sprite size attenuates with depth, distant
+  particles fade toward the background (atmospheric fog), and each type carries
+  an additive weight so "glow" types bloom while "solid" types read denser —
+  all on a cohesive cyan/teal palette.
 - **Stats HUD**: FPS (EMA), frame time, CPU time per `step()`, particle count,
-  draw calls, buffer-upload bytes, plus a lil-gui live-controls panel (the §2
-  tuning rig: count, rMax, friction, forceScale, beta, reseed, new rules) and a
-  best-effort battery readout.
+  draw calls, buffer-upload bytes, plus a lil-gui live-controls panel (count,
+  the §2 tuning rig rMax/friction/forceScale/beta, sprite size, glow, depth fog,
+  FOV, reseed, new rules) and a best-effort battery readout.
 
 The default physics params are a conservative **first retune** starting point —
 expect to sweep them via the HUD; 3D disperses more than 2D. A headless smoke
@@ -73,7 +77,7 @@ so there is no per-frame repacking when uploading to the GPU.
 |-----------|-------|
 | **M0** | Scaffold: Vite+TS+WebGL2, instanced quads, orbit camera, stats overlay ✓ |
 | **M1** | Physics: SoA `step`, `grid3d` (27-cell), soft bounds, first retune *(this PR)* |
-| M2 | Look: depth size/fog, additive cyan/teal palette |
+| **M2** | Look: depth size/fog, additive cyan/teal palette *(this PR)* |
 | M3 | Interaction: touch→3D force, orbit/zoom polish |
 | M4 | Instrumentation: FPS cap, benchmark mode, battery README |
 | M5 | (stretch) GPU physics via WebGL2 transform feedback / WebGPU compute |
