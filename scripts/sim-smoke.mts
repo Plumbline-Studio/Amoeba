@@ -20,19 +20,37 @@ for (let s = 0; s < STEPS; s++) {
   step(state, grid, matrix, params);
 }
 
-for (let i = 0; i < state.count * 3; i++) {
-  const p = state.positions[i];
-  const v = state.velocities[i];
-  if (!Number.isFinite(p) || !Number.isFinite(v)) {
-    console.error(`NON-FINITE at ${i}: pos=${p} vel=${v}`);
-    process.exit(1);
+let sumSpeed = 0;
+for (let i = 0; i < state.count; i++) {
+  for (let a = 0; a < 3; a++) {
+    const p = state.positions[i * 3 + a];
+    const v = state.velocities[i * 3 + a];
+    if (!Number.isFinite(p) || !Number.isFinite(v)) {
+      console.error(`NON-FINITE at ${i}: pos=${p} vel=${v}`);
+      process.exit(1);
+    }
+    maxCoord = Math.max(maxCoord, Math.abs(p));
+    maxSpeed = Math.max(maxSpeed, Math.abs(v));
   }
-  maxCoord = Math.max(maxCoord, Math.abs(p));
-  maxSpeed = Math.max(maxSpeed, Math.abs(v));
+  sumSpeed += Math.hypot(
+    state.velocities[i * 3 + 0],
+    state.velocities[i * 3 + 1],
+    state.velocities[i * 3 + 2],
+  );
 }
+const meanSpeed = sumSpeed / state.count;
 
 console.log(`steps=${STEPS} count=${params.count}`);
-console.log(`maxCoord=${maxCoord.toFixed(3)} maxSpeed/frame=${maxSpeed.toFixed(4)}`);
+console.log(
+  `maxCoord=${maxCoord.toFixed(3)} maxSpeed/frame=${maxSpeed.toFixed(4)} meanSpeed/frame=${meanSpeed.toFixed(5)}`,
+);
+
+// "Always moving": the cluster should still have non-trivial residual motion,
+// not collapse to a frozen blob. (Camera auto-rotate also guarantees visible
+// motion, but we want the sim itself alive.)
+if (meanSpeed < 1e-4) {
+  console.error('WARN: simulation nearly frozen (meanSpeed very low)');
+}
 
 // Soft box should keep things within a few worldSizes; per-frame speed small.
 if (maxCoord > params.worldSize * 4) {

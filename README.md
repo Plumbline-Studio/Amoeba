@@ -6,7 +6,9 @@ which host HTML/WebGL directly) and a mobile web app / PWA.
 
 See [`PLAN.md`](./PLAN.md) for the full design and milestone roadmap.
 
-## Status: M0 scaffold + M1 physics + M2 look
+**Live:** https://otiumtec.github.io/Amoeba/ (deployed from `main` via GitHub Actions).
+
+## Status: M0–M5 (full plan)
 
 - **Vite + TypeScript + WebGL2** standalone app.
 - **N particles** drawn as additively-blended **instanced billboard quads**
@@ -20,15 +22,33 @@ See [`PLAN.md`](./PLAN.md) for the full design and milestone roadmap.
   particles fade toward the background (atmospheric fog), and each type carries
   an additive weight so "glow" types bloom while "solid" types read denser —
   all on a cohesive cyan/teal palette.
+- **Pointer force** (M3): "push where you point" — the 2D pointer is projected
+  onto the camera-facing plane through the cluster centroid and a radial impulse
+  is applied there. Orbit vs push are separated by gesture.
+- **Instrumentation** (M4): adaptive FPS cap (30 / 60 / uncapped), a 10s
+  benchmark mode that exports a per-frame CSV, and the battery line in the HUD.
+- **GPU physics** (M5, experimental): an opt-in WebGL2 **transform-feedback**
+  path (neighbor-free swirl) demonstrating the GPU compute pipeline. Off by
+  default; reverts to CPU automatically if it can't initialize.
 - **Stats HUD**: FPS (EMA), frame time, CPU time per `step()`, particle count,
-  draw calls, buffer-upload bytes, plus a lil-gui live-controls panel (count,
-  the §2 tuning rig rMax/friction/forceScale/beta, sprite size, glow, depth fog,
-  FOV, reseed, new rules) and a best-effort battery readout.
+  draw calls, buffer-upload bytes, battery, plus a lil-gui live-controls panel.
 
-The default physics params are a conservative **first retune** starting point —
-expect to sweep them via the HUD; 3D disperses more than 2D. A headless smoke
-test (`npm run test:smoke`) runs 600 steps and asserts the sim stays finite and
-bounded.
+The scene is built to stay **alive and in motion**: a slow idle auto-rotate, a
+randomized rule matrix that keeps the clusters rearranging, and an additive
+cyan/teal glow for a mystical, ambient feel.
+
+The default physics params are a conservative **first retune** — sweep them via
+the HUD; 3D disperses more than 2D. A headless smoke test (`npm run test:smoke`)
+runs 600 steps and asserts the sim stays finite, bounded, and still moving.
+
+## Controls
+
+- **Drag** (mouse / one finger) — orbit.
+- **Wheel / pinch** — zoom.
+- **Shift+drag** or **right-drag** (or enable *Interaction → push on drag* for
+  touch) — push the particles where you point.
+- **HUD panel** (top-right) — particle count, physics tuning, look, interaction,
+  FPS cap, benchmark, and the experimental GPU mode.
 
 ## Build & run
 
@@ -62,9 +82,10 @@ src/
   render/
     gl.ts camera.ts projection.ts
     mat4.ts            # render-only 4x4 linear algebra
+    gpu.ts             # M5 experimental transform-feedback path
     shaders/particle.vert particle.frag
   interaction/ pointer.ts
-  hud/ stats.ts panel.ts battery.ts
+  hud/ stats.ts panel.ts battery.ts benchmark.ts
 ```
 
 State is **structure-of-arrays** (SoA) from day one — flat typed arrays
@@ -76,11 +97,11 @@ so there is no per-frame repacking when uploading to the GPU.
 | Milestone | Scope |
 |-----------|-------|
 | **M0** | Scaffold: Vite+TS+WebGL2, instanced quads, orbit camera, stats overlay ✓ |
-| **M1** | Physics: SoA `step`, `grid3d` (27-cell), soft bounds, first retune *(this PR)* |
-| **M2** | Look: depth size/fog, additive cyan/teal palette *(this PR)* |
-| M3 | Interaction: touch→3D force, orbit/zoom polish |
-| M4 | Instrumentation: FPS cap, benchmark mode, battery README |
-| M5 | (stretch) GPU physics via WebGL2 transform feedback / WebGPU compute |
+| **M1** | Physics: SoA `step`, `grid3d` (27-cell), soft bounds, first retune ✓ |
+| **M2** | Look: depth size/fog, additive cyan/teal palette ✓ |
+| **M3** | Interaction: pointer→3D force, orbit/zoom polish ✓ |
+| **M4** | Instrumentation: FPS cap, benchmark CSV, battery in HUD ✓ |
+| **M5** | (stretch) GPU physics via WebGL2 transform feedback — experimental scaffold ✓ |
 
 ## Battery methodology (for later measurement)
 

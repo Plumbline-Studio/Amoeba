@@ -63,6 +63,27 @@ export function seed(state: SimState, params: SimParams, seedValue = 1): void {
   }
 }
 
+/** Compute the cluster centroid into `out` (mean particle position). */
+export function centroid(state: SimState, out: [number, number, number]): [number, number, number] {
+  let cx = 0;
+  let cy = 0;
+  let cz = 0;
+  const { positions, count } = state;
+  if (count === 0) {
+    out[0] = out[1] = out[2] = 0;
+    return out;
+  }
+  for (let i = 0; i < count; i++) {
+    cx += positions[i * 3 + 0];
+    cy += positions[i * 3 + 1];
+    cz += positions[i * 3 + 2];
+  }
+  out[0] = cx / count;
+  out[1] = cy / count;
+  out[2] = cz / count;
+  return out;
+}
+
 /** Small, fast, dependency-free seeded PRNG. */
 export function mulberry32(a: number): () => number {
   return function () {

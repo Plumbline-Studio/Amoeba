@@ -22,14 +22,16 @@ export interface OrbitConfig {
   idleDelay: number;
 }
 
+// Tuned for an ambient, always-in-motion scene: auto-rotate resumes quickly
+// after the user lets go, so the scene never sits still.
 export const DEFAULT_ORBIT: OrbitConfig = {
   distance: 3.2,
   minDistance: 0.6,
   maxDistance: 12,
   minElevation: -1.45,
   maxElevation: 1.45,
-  autoRotateSpeed: 0.12,
-  idleDelay: 2.0,
+  autoRotateSpeed: 0.1,
+  idleDelay: 0.6,
 };
 
 export class OrbitCamera {

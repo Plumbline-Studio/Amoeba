@@ -10,6 +10,12 @@ export interface FrameStats {
   uploadBytes: number;
   /** Wall time spent inside engine step() this frame, ms. */
   cpuStepMs: number;
+  /** Active FPS cap (0 = uncapped). */
+  fpsCap: number;
+  /** Battery status line ("unavailable" when the API is restricted). */
+  battery: string;
+  /** Optional transient status (e.g. benchmark progress). */
+  note?: string;
 }
 
 export class StatsOverlay {
@@ -49,14 +55,18 @@ export class StatsOverlay {
     this.lastFlush = now;
 
     const fps = this.emaFrameMs > 0 ? 1000 / this.emaFrameMs : 0;
-    this.el.textContent = [
-      `FPS        ${fps.toFixed(1)}`,
+    const cap = stats.fpsCap > 0 ? ` (cap ${stats.fpsCap})` : '';
+    const lines = [
+      `FPS        ${fps.toFixed(1)}${cap}`,
       `frame      ${this.emaFrameMs.toFixed(2)} ms`,
       `cpu/step   ${stats.cpuStepMs.toFixed(3)} ms`,
       `particles  ${stats.particleCount.toLocaleString()}`,
       `draw calls ${stats.drawCalls}`,
       `upload     ${formatBytes(stats.uploadBytes)}`,
-    ].join('\n');
+      stats.battery,
+    ];
+    if (stats.note) lines.push(stats.note);
+    this.el.textContent = lines.join('\n');
   }
 }
 
