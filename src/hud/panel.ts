@@ -26,6 +26,11 @@ export interface PerfState {
   fpsCap: number;
 }
 
+export interface MotionState {
+  /** Scene speed, 0 (frozen) .. 100 (native/fastest). */
+  speed: number;
+}
+
 export interface GpuState {
   enabled: boolean;
 }
@@ -45,11 +50,13 @@ export function createPanel(
   push: PushState,
   perf: PerfState,
   gpu: GpuState,
+  motion: MotionState,
   cb: PanelCallbacks,
 ): GUI {
   const gui = new GUI({ title: 'particle-life-3d' });
 
   const sim = gui.addFolder('Simulation');
+  sim.add(motion, 'speed', 0, 100, 1).name('speed');
   sim
     .add(params, 'count', 500, 30000, 100)
     .name('count')

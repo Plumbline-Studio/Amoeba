@@ -104,6 +104,7 @@ function main(): void {
   };
 
   const perf = { fpsCap: 0 };
+  const motion = { speed: 100 };
   const gpu = { enabled: false };
   let gpuParticles: GpuParticles | null = null;
   const benchmark = new Benchmark();
@@ -111,7 +112,7 @@ function main(): void {
 
   const stats = new StatsOverlay();
   const battery = createBatteryReadout();
-  createPanel(params, view, push, perf, gpu, {
+  createPanel(params, view, push, perf, gpu, motion, {
     onCountChange(count) {
       params.count = count;
       state = buildSim(params);
@@ -209,7 +210,7 @@ function main(): void {
     } else {
       // CPU path: 3D physics step, timed for the HUD's CPU readout.
       const t0 = performance.now();
-      step(state, grid, matrix, params);
+      step(state, grid, matrix, params, motion.speed / 100);
       cpuStepMs = performance.now() - t0;
 
       // Track the cluster centroid for the pointer-force projection plane.

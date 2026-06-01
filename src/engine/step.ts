@@ -16,12 +16,17 @@ import { applySoftBox } from './boundary';
  * Advance the simulation by one step. Returns particle count processed.
  * Per-frame integration (matching the 2D engine and PLAN §2); the fixed-
  * timestep accumulator for frame-rate independence lands in M4.
+ *
+ * `speedScale` (0..1) slows the scene by scaling how far particles advance per
+ * frame — 1 is full/native speed, 0 freezes motion. Velocity/force dynamics are
+ * unchanged, so the look is preserved, just played faster or slower.
  */
 export function step(
   state: SimState,
   grid: Grid3D,
   matrix: AttractionMatrix,
   params: SimParams,
+  speedScale = 1,
 ): number {
   const { positions, velocities, forces, types, count } = state;
   const { rMax, friction, forceScale, beta, typeCount } = params;
@@ -85,11 +90,11 @@ export function step(
     forces[i * 3 + 2] = fz;
   }
 
-  // Integrate: v = (v + f·FORCE_SCALE)·FRICTION; pos += v.
+  // Integrate: v = (v + f·FORCE_SCALE)·FRICTION; pos += v·speedScale.
   for (let k = 0; k < count * 3; k++) {
     const v = (velocities[k] + forces[k] * forceScale) * friction;
     velocities[k] = v;
-    positions[k] += v;
+    positions[k] += v * speedScale;
   }
 
   applySoftBox(state, params);
