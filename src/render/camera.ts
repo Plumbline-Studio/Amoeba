@@ -7,7 +7,7 @@
  * scene reads as a living "interactive toy," not a frozen background.
  */
 
-import { create, lookAt, type Mat4, type Vec3 } from '../engine/matrix';
+import { create, lookAt, type Mat4, type Vec3 } from './mat4';
 
 export interface OrbitConfig {
   distance: number;

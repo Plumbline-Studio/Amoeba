@@ -16,6 +16,8 @@ export interface SimState {
   positions: Float32Array;
   /** n*3 floats, vx,vy,vz interleaved. */
   velocities: Float32Array;
+  /** n*3 floats, per-step force accumulator scratch (engine-internal). */
+  forces: Float32Array;
   /** n bytes, particle type index. */
   types: Uint8Array;
 }
@@ -27,6 +29,7 @@ export function createState(count: number, typeCount: number): SimState {
     typeCount,
     positions: new Float32Array(count * 3),
     velocities: new Float32Array(count * 3),
+    forces: new Float32Array(count * 3),
     types: new Uint8Array(count),
   };
 }
@@ -61,7 +64,7 @@ export function seed(state: SimState, params: SimParams, seedValue = 1): void {
 }
 
 /** Small, fast, dependency-free seeded PRNG. */
-function mulberry32(a: number): () => number {
+export function mulberry32(a: number): () => number {
   return function () {
     a |= 0;
     a = (a + 0x6d2b79f5) | 0;

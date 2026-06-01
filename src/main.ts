@@ -1,15 +1,14 @@
 /**
  * Bootstrap + render loop (PLAN §8). Wires the pure engine (SoA state) to the
- * render/camera/HUD layers. M0 is the render + camera + HUD skeleton: particles
- * are seeded once and drawn as instanced billboards; step() is a timed no-op
- * (physics lands in M1). The render loop re-uploads positions every frame so
- * that drop-in is free.
+ * render/camera/HUD layers. Each frame: run the 3D physics step (M1), re-upload
+ * positions, draw the instanced billboards, and refresh the HUD.
  */
 
 import { DEFAULT_PARAMS, type SimParams } from './engine/types';
-import { createState, seed, type SimState } from './engine/state';
+import { createState, seed, mulberry32, type SimState } from './engine/state';
 import { buildPalette } from './engine/palette';
 import { createGrid } from './engine/grid3d';
+import { createMatrix, type AttractionMatrix } from './engine/matrix';
 import { step } from './engine/step';
 
 import { ParticleRenderer } from './render/gl';
@@ -36,9 +35,10 @@ function main(): void {
     return;
   }
 
-  // Engine state (SoA). Grid is constructed now but unused until M1.
+  // Engine state (SoA) + spatial grid + type-attraction matrix.
   let state: SimState = buildSim(params);
-  let grid = createGrid(params.worldSize, params.rMax);
+  const grid = createGrid();
+  let matrix: AttractionMatrix = createMatrix(params.typeCount, mulberry32(1337));
   renderer.setPalette(buildPalette(params.typeCount));
   renderer.upload(state.positions, state.types, state.count);
 
@@ -53,8 +53,14 @@ function main(): void {
     onCountChange(count) {
       params.count = count;
       state = buildSim(params);
-      grid = createGrid(params.worldSize, params.rMax);
       renderer.upload(state.positions, state.types, state.count);
+    },
+    onReseed() {
+      state = buildSim(params, (Math.random() * 1e9) | 0);
+      renderer.upload(state.positions, state.types, state.count);
+    },
+    onRandomizeRules() {
+      matrix = createMatrix(params.typeCount, mulberry32((Math.random() * 1e9) | 0));
     },
   });
 
@@ -79,9 +85,9 @@ function main(): void {
     const dt = Math.min(frameMs / 1000, 0.05); // clamp huge tab-switch gaps
     lastTime = now;
 
-    // Physics step — a no-op in M0, but timed so the HUD's CPU readout is live.
+    // 3D physics step, timed for the HUD's CPU readout.
     const t0 = performance.now();
-    step(state, grid, params);
+    step(state, grid, matrix, params);
     cpuStepMs = performance.now() - t0;
 
     // Camera + projection.
@@ -89,7 +95,7 @@ function main(): void {
     projection.params.fovYDeg = view.fovYDeg;
     projection.update(aspect);
 
-    // Re-upload positions (static in M0; frees M1 physics drop-in).
+    // Re-upload the freshly stepped positions to the GPU.
     renderer.upload(state.positions, state.types, state.count);
 
     const focal = 1 / Math.tan((view.fovYDeg * Math.PI) / 360);
@@ -116,9 +122,9 @@ function main(): void {
   requestAnimationFrame(frame);
 }
 
-function buildSim(params: SimParams): SimState {
+function buildSim(params: SimParams, seedValue = 1): SimState {
   const state = createState(params.count, params.typeCount);
-  seed(state, params);
+  seed(state, params, seedValue);
   return state;
 }
 

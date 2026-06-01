@@ -17,17 +17,25 @@ export interface SimParams {
   worldSize: number;
   /** Max interaction radius (M1+: sizes the spatial grid cells). */
   rMax: number;
-  /** Velocity damping per step (M1+). */
+  /** Velocity damping per step. */
   friction: number;
-  /** Force scaling (M1+). */
+  /** Force scaling. */
   forceScale: number;
+  /** Repulsion-core fraction of rMax for the force curve (0..1). */
+  beta: number;
 }
 
+// Starting point for the 3D "first retune" (PLAN §2). The force curve is
+// bounded ~[-1,1], so with per-frame integration `v=(v+f·forceScale)·friction`
+// the steady velocity scales as f·forceScale·friction/(1−friction). These
+// values keep that small (stable, non-explosive) and are meant to be swept via
+// the HUD — 3D disperses more than 2D, so expect to iterate here.
 export const DEFAULT_PARAMS: SimParams = {
   count: 4000,
   typeCount: 5,
   worldSize: 1.0,
   rMax: 0.18,
-  friction: 0.86,
-  forceScale: 0.6,
+  friction: 0.85,
+  forceScale: 0.012,
+  beta: 0.3,
 };

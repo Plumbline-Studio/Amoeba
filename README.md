@@ -6,21 +6,25 @@ which host HTML/WebGL directly) and a mobile web app / PWA.
 
 See [`PLAN.md`](./PLAN.md) for the full design and milestone roadmap.
 
-## Status: M0 — Scaffold
-
-This is the **render + camera + HUD skeleton**. No physics yet.
+## Status: M0 scaffold + M1 physics
 
 - **Vite + TypeScript + WebGL2** standalone app.
 - **N particles** drawn as additively-blended **instanced billboard quads**
   (one instanced draw call, order-independent — no depth sort).
 - **Orbit camera**: drag to rotate, wheel / pinch to zoom, slow auto-rotate
   when idle.
+- **3D particle-life physics** (M1): SoA `step` with a 27-cell spatial hash
+  (`grid3d`), a randomized type-attraction matrix, the classic radial force
+  curve, and a soft bounded box (no z-wrap). Driven each frame on the CPU.
 - **Stats HUD**: FPS (EMA), frame time, CPU time per `step()`, particle count,
-  draw calls, buffer-upload bytes, plus a lil-gui live-controls panel and a
+  draw calls, buffer-upload bytes, plus a lil-gui live-controls panel (the §2
+  tuning rig: count, rMax, friction, forceScale, beta, reseed, new rules) and a
   best-effort battery readout.
 
-Particles are seeded once into a sphere and re-uploaded each frame; `step()` is
-a timed no-op so M1 physics drops straight in.
+The default physics params are a conservative **first retune** starting point —
+expect to sweep them via the HUD; 3D disperses more than 2D. A headless smoke
+test (`npm run test:smoke`) runs 600 steps and asserts the sim stays finite and
+bounded.
 
 ## Build & run
 
@@ -32,6 +36,7 @@ npm run dev        # start the Vite dev server
 npm run build      # typecheck + production build to dist/
 npm run preview    # serve the production build
 npm run typecheck  # tsc --noEmit only
+npm run test:smoke # headless engine stability check (600 steps, asserts bounded)
 ```
 
 Open the dev server URL it prints (default http://localhost:5173).
@@ -48,9 +53,11 @@ src/
   main.ts            bootstrap, render loop, wiring
   engine/            PURE — no DOM/WebGL
     types.ts state.ts grid3d.ts step.ts
-    matrix.ts palette.ts boundary.ts
+    matrix.ts          # type-attraction matrix + force curve
+    palette.ts boundary.ts
   render/
     gl.ts camera.ts projection.ts
+    mat4.ts            # render-only 4x4 linear algebra
     shaders/particle.vert particle.frag
   interaction/ pointer.ts
   hud/ stats.ts panel.ts battery.ts
@@ -64,8 +71,8 @@ so there is no per-frame repacking when uploading to the GPU.
 
 | Milestone | Scope |
 |-----------|-------|
-| **M0** | Scaffold: Vite+TS+WebGL2, instanced quads, orbit camera, stats overlay *(this commit)* |
-| M1 | Physics: SoA `step`, `grid3d` (27-cell), soft bounds, first retune |
+| **M0** | Scaffold: Vite+TS+WebGL2, instanced quads, orbit camera, stats overlay ✓ |
+| **M1** | Physics: SoA `step`, `grid3d` (27-cell), soft bounds, first retune *(this PR)* |
 | M2 | Look: depth size/fog, additive cyan/teal palette |
 | M3 | Interaction: touch→3D force, orbit/zoom polish |
 | M4 | Instrumentation: FPS cap, benchmark mode, battery README |

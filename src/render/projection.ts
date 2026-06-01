@@ -4,7 +4,7 @@
  * current canvas aspect + FOV (FOV is a live HUD control later).
  */
 
-import { create, perspective, type Mat4 } from '../engine/matrix';
+import { create, perspective, type Mat4 } from './mat4';
 
 export interface ProjectionParams {
   /** Vertical field of view in degrees (~50 per PLAN §3). */

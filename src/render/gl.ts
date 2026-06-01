@@ -7,7 +7,7 @@
  * position/type buffers (uploaded from the engine's SoA arrays).
  */
 
-import type { Mat4 } from '../engine/matrix';
+import type { Mat4 } from './mat4';
 import vertSrc from './shaders/particle.vert?raw';
 import fragSrc from './shaders/particle.frag?raw';
 
