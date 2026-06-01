@@ -13,6 +13,8 @@ export interface PanelState {
   glow: number;
   fog: number;
   fovYDeg: number;
+  /** Palette hue rotation in degrees (0..360). */
+  hue: number;
 }
 
 export interface PushState {
@@ -42,6 +44,8 @@ export interface PanelCallbacks {
   onBenchmark(): void;
   /** Toggle the experimental M5 GPU (transform-feedback) path. */
   onToggleGpu(enabled: boolean): void;
+  /** Rebuild + re-upload the palette at the given hue rotation (degrees). */
+  onColorChange(hueDeg: number): void;
 }
 
 export function createPanel(
@@ -72,6 +76,7 @@ export function createPanel(
   physics.add(params, 'beta', 0.05, 0.6, 0.01).name('beta');
 
   const look = gui.addFolder('Look');
+  look.add(view, 'hue', 0, 360, 1).name('color shift').onChange((v: number) => cb.onColorChange(v));
   look.add(view, 'pointSize', 0.005, 0.08, 0.001).name('sprite size');
   look.add(view, 'glow', 0.2, 3.0, 0.05).name('glow');
   look.add(view, 'fog', 0.0, 1.0, 0.01).name('depth fog');

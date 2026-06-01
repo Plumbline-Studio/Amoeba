@@ -54,6 +54,7 @@ function main(): void {
     glow: 1.1,
     fog: 0.85,
     fovYDeg: projection.params.fovYDeg,
+    hue: 0,
   };
 
   // §5 pointer-force settings + scratch for the 2D->3D projection.
@@ -130,6 +131,9 @@ function main(): void {
       benchmark.start(10, state.count, (summary) => {
         benchNote = summary;
       });
+    },
+    onColorChange(hueDeg) {
+      renderer.setPalette(buildPalette(params.typeCount, hueDeg));
     },
     onToggleGpu(enabled) {
       gpu.enabled = false;
