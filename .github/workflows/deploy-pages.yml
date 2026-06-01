@@ -2,7 +2,11 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    # Deploy from both main and the repo's current default branch. GitHub's
+    # auto-created `github-pages` environment only permits deployments from the
+    # default branch, which on this repo is the claude/* branch (it was pushed
+    # first), so it must be included or the deploy job is blocked.
+    branches: [main, claude/amoeba-m0-scaffold-OWdlR]
   workflow_dispatch:
 
 # Allow the workflow to publish to Pages.
