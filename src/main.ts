@@ -105,7 +105,8 @@ function main(): void {
   };
 
   const perf = { fpsCap: 0 };
-  const motion = { speed: 100 };
+  // Default to a slow ambient drift (30%); sweep up via the HUD.
+  const motion = { speed: 30 };
   const gpu = { enabled: false };
   let gpuParticles: GpuParticles | null = null;
   const benchmark = new Benchmark();
