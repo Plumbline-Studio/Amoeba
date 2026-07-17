@@ -6,7 +6,7 @@ which host HTML/WebGL directly) and a mobile web app / PWA.
 
 See [`PLAN.md`](./PLAN.md) for the full design and milestone roadmap.
 
-**Live:** https://otiumtec.github.io/Amoeba/ (deployed from `main` via GitHub Actions).
+**Live:** https://plumbline-studio.github.io/Amoeba/ (deployed from `main` via GitHub Actions).
 
 ## Status: M0–M5 (full plan)
 
