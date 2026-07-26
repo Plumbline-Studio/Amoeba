@@ -1,4 +1,4 @@
-# particle-life-3d
+# particle-life-3d (repo: Amoeba)
 
 A standalone, spin-out **3D evolution of the 2D "particle life" background**.
 Intended homes: a Windows live wallpaper (Lively Wallpaper / Wallpaper Engine,
@@ -8,7 +8,9 @@ See [`PLAN.md`](./PLAN.md) for the full design and milestone roadmap.
 
 **Live:** https://plumbline-studio.github.io/Amoeba/ (deployed from `main` via GitHub Actions).
 
-## Status: M0–M5 (full plan)
+**Status (2026-07-26): working experiment, live.** All planned milestones (M0–M5) landed by June 2026; since then only occasional look/tuning tweaks (last 2026-07-17). Pure client-side WebGL2 — no backend, no accounts, no secrets. Also embedded as a background source by `background-vault`.
+
+## What's built: M0–M5 (full plan)
 
 - **Vite + TypeScript + WebGL2** standalone app.
 - **N particles** drawn as additively-blended **instanced billboard quads**
